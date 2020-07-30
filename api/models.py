@@ -6,7 +6,7 @@ User = get_user_model()
 
 class Group(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(null=True)
 
     def __str__(self):
         return f'{self.pk} {self.title}'

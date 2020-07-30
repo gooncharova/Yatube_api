@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -5,47 +6,56 @@ from .models import Comment, Follow, Group, Post, User
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
 
     class Meta:
-        fields = ('id', 'text', 'author', 'pub_date')
+        fields = '__all__'
         model = Post
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
 
     class Meta:
-        fields = ('id', 'author', 'post', 'text', 'created')
+        fields = '__all__'
         model = Comment
 
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('id', 'title')
+        fields = '__all__'
         model = Group
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(
-        default=serializers.CurrentUserDefault())
+    user = serializers.SlugRelatedField(
+        slug_field='username', read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
     following = serializers.SlugRelatedField(
         queryset=User.objects.all(),
         slug_field='username'
     )
 
-    def validate(self, data):
+    def validate_following(self, following):
         user = self.context['request'].user
-        if data['following'] == user:
+        if user == following:
             raise serializers.ValidationError(
-                'You cannot subscribe to yourself')
-        return data
+                'You cannot subscribe to yourself.')
+        return following
 
     class Meta:
-        fields = ('user', 'following')
+        fields = '__all__'
         model = Follow
-        validators = [UniqueTogetherValidator(
-            queryset=Follow.objects.all(),
-            fields=['user', 'following'],
-            message='You already subscribe this user.')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'], name='unique_follow'),
+        ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=['user', 'following'],
+                message='You already subscribe this user.')
         ]
