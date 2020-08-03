@@ -1,4 +1,3 @@
-import django_filters.rest_framework
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
@@ -15,7 +14,6 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
-    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
     filterset_fields = ['group', ]
 
     def perform_create(self, serializer):

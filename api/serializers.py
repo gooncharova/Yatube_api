@@ -1,4 +1,3 @@
-from django.db import models
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -49,10 +48,6 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Follow
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'following'], name='unique_follow'),
-        ]
         validators = [
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
